@@ -2,6 +2,7 @@ use std::env as e;
 use std::io;
 use std::io::BufRead;
 use std::io::Write;
+use Output::*;
 
 fn main() {
     //
@@ -28,11 +29,16 @@ fn main() {
         let pieces: Vec<&str> = line.split_whitespace().collect();
         let mut tmp:    Vec<&str> = vec![];
         for c in &cols {
-            let   idx = (*c - 1) as usize;
-            let   x   = pieces.get(idx);
-            match x {
-                None    => {}
-                Some(m) => { tmp.push(m) },
+            match *c {
+                StackExpr => {}
+                Column(i) => {
+                    let   idx = (i - 1) as usize;
+                    let   x   = pieces.get(idx);
+                    match x {
+                        None    => {}
+                        Some(m) => { tmp.push(m) },
+                    }
+                }
             }
         }
         let output: String = intersperse_tab(tmp).into_iter().collect();
@@ -40,12 +46,18 @@ fn main() {
     }
 }
 
-fn process_args(args: Vec<String>) -> Vec<u32> {
+#[derive(Debug,PartialEq)]
+enum Output {
+    Column(u32),
+    StackExpr
+}
+
+fn process_args(args: Vec<String>) -> Vec<Output> {
     let mut cols = vec![];
     for a in args {
         let   chars: Vec<char> = a.chars().collect();
         match chars[0] {
-            '%' => { cols.push(chars[1].to_digit(10).unwrap()); },
+            '%' => { cols.push(Column(chars[1].to_digit(10).unwrap())); },
             _   => {}
         };
     }
@@ -77,5 +89,5 @@ fn intersperse_tab(xs: Vec<&str>) -> Vec<String> {
 #[test]
 fn test_process_args() {
     let args = vec![String::from("%1"), String::from("%2")];
-    assert_eq!(vec![1,2], process_args(args));
+    assert_eq!(vec![Column(1),Column(2)], process_args(args));
 }
