@@ -17,14 +17,7 @@ fn main() {
     //
     // Process the args.
     //
-    let mut cols = vec![];
-    for a in e::args() {
-        let   chars: Vec<char> = a.chars().collect();
-        match chars[0] {
-            '%' => { cols.push(chars[1].to_digit(10).unwrap()); },
-            _   => {}
-        };
-    }
+    let cols = process_args(e::args().collect());
 
     //
     // Iterate over stdin.
@@ -47,6 +40,18 @@ fn main() {
     }
 }
 
+fn process_args(args: Vec<String>) -> Vec<u32> {
+    let mut cols = vec![];
+    for a in args {
+        let   chars: Vec<char> = a.chars().collect();
+        match chars[0] {
+            '%' => { cols.push(chars[1].to_digit(10).unwrap()); },
+            _   => {}
+        };
+    }
+    cols
+}
+
 fn intersperse_tab(xs: Vec<&str>) -> Vec<String> {
     let mut zs: Vec<String> = vec![];
     let mut coll            = xs.iter().peekable();
@@ -67,4 +72,10 @@ fn intersperse_tab(xs: Vec<&str>) -> Vec<String> {
         }
     }
     zs
+}
+
+#[test]
+fn test_process_args() {
+    let args = vec![String::from("%1"), String::from("%2")];
+    assert_eq!(vec![1,2], process_args(args));
 }
