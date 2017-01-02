@@ -23,7 +23,7 @@ It is very easy to quickly run out of levels of nesting. In addition string base
 
 __Fnl__ takes the approach used by [jt](http://) and passes arguments directly to the program.
 
-`$ fnl %1 %2`
+`$ fnl %1 %2` or `$ fnl %1 [ %1 %2 add ]`
 
 ## Use
 
