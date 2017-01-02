@@ -2,11 +2,9 @@ use std::env as e;
 use std::io;
 use std::io::BufRead;
 use StackOp::*;
+use StackResult::*;
 
 fn main() {
-    //
-    // Check the args.
-    //
     if e::args().len() == 1 {
         let basename = e::args().next().unwrap();
         let usage    = format!("Usage: {} [ COLUMNS... ]\n\nFunnel columns of data from stdin.\n\tCOLUMNS\t%1, %2, etc. Like awk: {{ print $1, $2; }}\n\n\tEx: {0} %1 %2", basename);
@@ -14,50 +12,39 @@ fn main() {
         std::process::exit(1);
     }
 
-    //
-    // Process the args.
-    //
-    let cols = process_args(e::args().skip(1).collect());
-
-    //
-    // Iterate over stdin.
-    //
+    let exprs = process_args(e::args().skip(1).collect());
     let stdin = io::stdin();
     for l in stdin.lock().lines() {
-        let line              = l.unwrap();
-        let pieces: Vec<&str> = line.split_whitespace().collect();
-        let mut tmp:    Vec<&str> = vec![];
-        // for c in &cols {
-        //     println!("c: {:?}", c);
-        //     match *c {
-        //         Column(i) => {
-        //             let   idx = (i - 1) as usize;
-        //             let   x   = pieces.get(idx);
-        //             match x {
-        //                 None    => {}
-        //                 Some(m) => { tmp.push(m) },
-        //             }
-        //         },
-        //         _ => {}
-        //     }
-        // }
-        let output: String = intersperse_tab(tmp).into_iter().collect();
+        let output = process_line(l.unwrap(), &exprs);
         println!("{}", output);
     }
 }
 
-#[derive(Debug,PartialEq,Clone)]
-struct StackExpr {
-    ops: Vec<StackOp>
+fn process_line(line: String, exprs: &Vec<StackExpr>) -> String {
+    let pieces:  Vec<&str> = line.split_whitespace().collect();
+    let mut tmp: Vec<&str> = vec![];
+    for e in exprs {
+        println!("{:?}", e);
+        let foo = eval(pieces.clone(), e.clone());
+        println!("{:?}", foo);
+    //     println!("c: {:?}", c);
+    //     match *c {
+    //         Column(i) => {
+    //             let   idx = (i - 1) as usize;
+    //             let   x   = pieces.get(idx);
+    //             match x {
+    //                 None    => {}
+    //                 Some(m) => { tmp.push(m) },
+    //             }
+    //         },
+    //         _ => {}
+    //     }
+    }
+    let output: String = intersperse_tab(tmp).into_iter().collect();
+    output
 }
 
-#[derive(Debug,PartialEq,Clone)]
-enum StackOp {
-    Word(String),
-    Column(u32),
-    Number(u32),
-}
-
+/// Arguments to this program are a stack DSL.
 fn process_args(args: Vec<String>) -> Vec<StackExpr> {
     let mut results = vec![];
     let mut tmp     = vec![];
@@ -108,12 +95,7 @@ fn process_args(args: Vec<String>) -> Vec<StackExpr> {
     results
 }
 
-impl StackExpr {
-    fn simple(op: StackOp) -> StackExpr {
-        StackExpr{ ops: vec![op]}
-    }
-}
-
+/// Output formatting.
 fn intersperse_tab(xs: Vec<&str>) -> Vec<String> {
     let mut zs: Vec<String> = vec![];
     let mut coll            = xs.iter().peekable();
@@ -136,6 +118,64 @@ fn intersperse_tab(xs: Vec<&str>) -> Vec<String> {
     zs
 }
 
+///
+/// Types
+///
+
+#[derive(Debug,PartialEq,Clone)]
+struct StackExpr {
+    ops: Vec<StackOp>
+}
+
+impl StackExpr {
+    fn len(&self) -> usize {
+        self.ops.len()
+    }
+    fn is_simple(&self) -> bool {
+        self.len() == 1
+    }
+    fn simple(op: StackOp) -> StackExpr {
+        StackExpr{ ops: vec![op]}
+    }
+}
+
+#[derive(Debug,PartialEq,Clone)]
+enum StackOp {
+    Word(String),
+    Column(u32),
+    Number(u32),
+}
+
+#[derive(Debug,PartialEq,Clone)]
+enum StackResult {
+    Num(u32),
+    Str(String)
+}
+
+/// Evaluate a StackExpr.
+fn eval(pieces: Vec<&str>, expr: StackExpr) -> StackResult {
+    if expr.is_simple() {
+        match expr.ops[0] {
+            Column(idx) => {
+                let zero_based = idx - 1;
+                let res = pieces.get(zero_based as usize).unwrap();
+                return StackResult::Str(String::from(*res))
+            }
+            _ => {}
+        }
+    }
+    let StackExpr{ops} = expr;
+    for o in ops {
+        println!("{:?}",o);
+    }
+    StackResult::Num(1)
+}
+
+///
+/// Tests
+///
+
+// Helper b/c I don't know how to alias String::from
 fn str(lit: &str) -> String {
     String::from(lit)
 }
@@ -162,4 +202,21 @@ fn test_process_args_3() {
     let t1   = StackExpr::simple(Column(1));
     let t2   = StackExpr{ops: vec![Column(2), Number(100), Word(str("add"))]};
     assert_eq!(vec![t1,t2], process_args(args));
+}
+
+#[test]
+fn test_eval_simple() {
+    let expr   = StackExpr { ops: vec![Column(1)] };
+    let s      = "a".to_string();
+    let pieces = s.split_whitespace().collect();
+    assert_eq!(Str(str("a")), eval(pieces, expr));
+}
+
+#[test]
+fn test_simple_expr() {
+    let expr  = StackExpr { ops: vec![Column(1)] };
+    assert_eq!(true, expr.is_simple());
+
+    let expr2 = StackExpr { ops: vec![Column(1), Number(100)] };
+    assert_eq!(false, expr2.is_simple());
 }
