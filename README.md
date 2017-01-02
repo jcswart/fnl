@@ -48,3 +48,9 @@ c	b	a
 ```
 
 Output is __tab__ delimited so that it is ready for interop with __cut__ by default.
+
+## Roadmap
+
+- [x] Basic expressions, `%1`
+- [ ] Complex expressions, `[ %1 100 add ]`
+- [ ] BEGIN and END blocks
