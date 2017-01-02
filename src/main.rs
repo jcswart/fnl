@@ -131,6 +131,13 @@ enum StackOp {
     Number(u32),
 }
 
+fn get_func(name: String) -> Box<Fn(u32,u32) -> u32> {
+    let add = str("add");
+    match name {
+        add => { Box::new(std::ops::Add::add) }
+    }
+}
+
 /// Evaluate a StackExpr.
 fn eval(pieces: Vec<&str>, expr: StackExpr) -> String {
     if expr.is_simple() {
@@ -143,11 +150,26 @@ fn eval(pieces: Vec<&str>, expr: StackExpr) -> String {
             _ => {}
         }
     }
+    let mut stack = vec![];
     let StackExpr{ops} = expr;
     for o in ops {
-        // eval stack exprs here
+        match o {
+            Number(n)   => { stack.push(n) }
+            Column(idx) => {
+                let zero_based = idx - 1;
+                let res        = pieces.get(zero_based as usize).unwrap();
+                let num: u32   = res.parse().unwrap();
+                stack.push(num);
+            }
+            Word(w) => {
+                let arg2 = stack.pop();
+                let arg1 = stack.pop();
+                let func = get_func(w);
+                stack.push(func(arg1.unwrap(), arg2.unwrap()));
+            }
+        }
     }
-    1.to_string()
+    stack.pop().unwrap().to_string()
 }
 
 ///
@@ -198,4 +220,12 @@ fn test_simple_expr() {
 
     let expr2 = StackExpr { ops: vec![Column(1), Number(100)] };
     assert_eq!(false, expr2.is_simple());
+}
+
+#[test]
+fn test_get_func() {
+    let name = str("add");
+    let func = get_func(name);
+    let r    = func(1,2);
+    assert_eq!(3,r);
 }
