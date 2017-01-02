@@ -1,6 +1,8 @@
 # fnl
 
-A tiny __awk__ replacement for distributed systems.
+A tiny __awk__ replacement for working with distributed systems.
+
+Command input inspired by [jt][1].
 
 ## Goals
 
@@ -21,7 +23,7 @@ Is the primary reason this tool exists in the first place. Dealing with distribu
 
 It is very easy to quickly run out of levels of nesting. In addition string based arguments require that you escape and unescape, etc. Not ideal.
 
-__Fnl__ takes the approach used by [jt](http://) and passes arguments directly to the program.
+__Fnl__ takes the approach used by [jt][1] and passes arguments directly to the program.
 
 `$ fnl %1 %2` or `$ fnl %1 [ %1 %2 add ]`
 
@@ -38,7 +40,7 @@ __Fnl__ breaks input lines into columns on any whitespace characters.
 
 The argument __[__ begins a stack expression and __]__ ends it. Inside this expression __%2__ tells __fnl__ that we wish to extract the second column.
 
-Since this usage is so common `[ %2 ]` can be rewritten `%2` for brevity. 
+Since this usage is so common `[ %2 ]` can be rewritten `%2` for brevity.
 
 In the next example we extract all three columns in reverse using the shorter expression syntax.
 
@@ -54,3 +56,5 @@ Output is __tab__ delimited so that it is ready for interop with __cut__ by defa
 - [x] Basic expressions, `%1`
 - [ ] Complex expressions, `[ %1 100 add ]`
 - [ ] BEGIN and END blocks
+
+[1]:https://github.com/micha/json-table
