@@ -2,7 +2,6 @@ use std::env as e;
 use std::io;
 use std::io::BufRead;
 use StackOp::*;
-use StackResult::*;
 
 fn main() {
     if e::args().len() == 1 {
@@ -22,23 +21,10 @@ fn main() {
 
 fn process_line(line: String, exprs: &Vec<StackExpr>) -> String {
     let pieces:  Vec<&str> = line.split_whitespace().collect();
-    let mut tmp: Vec<&str> = vec![];
+    let mut tmp: Vec<String> = vec![];
     for e in exprs {
-        println!("{:?}", e);
         let foo = eval(pieces.clone(), e.clone());
-        println!("{:?}", foo);
-    //     println!("c: {:?}", c);
-    //     match *c {
-    //         Column(i) => {
-    //             let   idx = (i - 1) as usize;
-    //             let   x   = pieces.get(idx);
-    //             match x {
-    //                 None    => {}
-    //                 Some(m) => { tmp.push(m) },
-    //             }
-    //         },
-    //         _ => {}
-    //     }
+        tmp.push(foo);
     }
     let output: String = intersperse_tab(tmp).into_iter().collect();
     output
@@ -91,12 +77,11 @@ fn process_args(args: Vec<String>) -> Vec<StackExpr> {
             }
         };
     }
-    println!("r -> {:?}", results);
     results
 }
 
 /// Output formatting.
-fn intersperse_tab(xs: Vec<&str>) -> Vec<String> {
+fn intersperse_tab(xs: Vec<String>) -> Vec<String> {
     let mut zs: Vec<String> = vec![];
     let mut coll            = xs.iter().peekable();
     let mut not_first       = false;
@@ -146,29 +131,23 @@ enum StackOp {
     Number(u32),
 }
 
-#[derive(Debug,PartialEq,Clone)]
-enum StackResult {
-    Num(u32),
-    Str(String)
-}
-
 /// Evaluate a StackExpr.
-fn eval(pieces: Vec<&str>, expr: StackExpr) -> StackResult {
+fn eval(pieces: Vec<&str>, expr: StackExpr) -> String {
     if expr.is_simple() {
         match expr.ops[0] {
             Column(idx) => {
                 let zero_based = idx - 1;
                 let res = pieces.get(zero_based as usize).unwrap();
-                return StackResult::Str(String::from(*res))
+                return String::from(*res)
             }
             _ => {}
         }
     }
     let StackExpr{ops} = expr;
     for o in ops {
-        println!("{:?}",o);
+        // eval stack exprs here
     }
-    StackResult::Num(1)
+    1.to_string()
 }
 
 ///
@@ -209,7 +188,7 @@ fn test_eval_simple() {
     let expr   = StackExpr { ops: vec![Column(1)] };
     let s      = "a".to_string();
     let pieces = s.split_whitespace().collect();
-    assert_eq!(Str(str("a")), eval(pieces, expr));
+    assert_eq!(str("a"), eval(pieces, expr));
 }
 
 #[test]
