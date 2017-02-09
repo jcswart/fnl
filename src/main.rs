@@ -129,8 +129,7 @@ fn eval(pieces: Vec<&str>, expr: StackExpr) -> String {
 ///
 
 // Helper b/c I don't know how to alias String::from
-// TODO: how do i make this "invisbile" to dead code
-// b/c its only used for tests
+#[allow(dead_code)]
 fn str(lit: &str) -> String {
     String::from(lit)
 }
