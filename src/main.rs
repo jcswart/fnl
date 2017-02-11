@@ -5,6 +5,11 @@ use std::io::BufRead;
 fn main() {
     let args: Vec<String> = e::args().skip(1).collect();
     let stdin             = io::stdin();
+    if args.len() == 1 && (args[0] == "-h".to_string()   ||
+                           args[0] == "--help".to_string()) {
+        print_help();
+    }
+
     for l in stdin.lock().lines() {
         let line = l.unwrap();
         if line == "".to_string() {
@@ -13,8 +18,6 @@ fn main() {
             let pieces: Vec<&str> = line.split_whitespace().collect();
             if args.len() <= 0 {
                 print_all(pieces);
-            } else if args.len() == 1 && args[0] == "-h".to_string() {
-                print_help();
             } else {
                 print_selected(&args, pieces);
             }
