@@ -5,39 +5,39 @@ use std::io::BufRead;
 fn main() {
     let args: Vec<String> = e::args().skip(1).collect();
     let stdin             = io::stdin();
-    if args.len() == 1 && (args[0] == "-h".to_string()   ||
-                           args[0] == "--help".to_string()) {
+    if args.len() == 1 && (args[0] == "-h" ||
+                           args[0] == "--help") {
         print_help();
     }
 
     for l in stdin.lock().lines() {
         let line = l.unwrap();
-        if line == "".to_string() {
-            println!("");
+        if line == "" {
+            println!();
         } else {
             let pieces: Vec<&str> = line.split_whitespace().collect();
-            if args.len() <= 0 {
-                print_all(pieces);
+            if args.is_empty() {
+                print_all(&pieces);
             } else {
-                print_selected(&args, pieces);
+                print_selected(&args, &pieces);
             }
         }
     }
 }
 
-fn print_selected(args: &Vec<String>, pieces: Vec<&str>) -> () {
+fn print_selected(args: &[String], pieces: &[&str]) -> () {
     let mut output = vec![];
     for i in args {
         let j = i.parse::<u32>().unwrap() - 1;
-        output.push(pieces.get(j as usize).unwrap());
+        output.push(&pieces[j as usize]);
     }
     let z: Vec<String> = output.iter().map(|s| String::from(**s)).collect();
-    println!("{}", intersperse(z, "\t".to_string()).into_iter().collect::<String>());
+    println!("{}", intersperse(&z, &"\t".to_string()).into_iter().collect::<String>());
 }
 
-fn print_all(pieces: Vec<&str>) -> () {
+fn print_all(pieces: &[&str]) -> () {
     let y: Vec<String> = pieces.iter().map(|s| String::from(*s)).collect();
-    println!("{}", intersperse(y, "\t".to_string()).into_iter().collect::<String>());
+    println!("{}", intersperse(&y, &"\t".to_string()).into_iter().collect::<String>());
 }
 
 fn print_help() -> ! {
@@ -45,13 +45,13 @@ fn print_help() -> ! {
     std::process::exit(1);
 }
 
-fn intersperse(xs: Vec<String>, seperator: String) -> Vec<String> {
-    let mut result = vec![];
+fn intersperse<'a>(xs: &'a [String], seperator: &'a str) -> Vec<&'a str> {
+    let mut result: Vec<&str> = vec![];
     let end = xs.last().unwrap();
-    for x in &xs {
-        result.push(x.clone());
+    for x in xs.iter() {
+        result.push(x);
         if x.ne(end) {
-            result.push(seperator.clone())
+            result.push(seperator)
         }
     }
     result
