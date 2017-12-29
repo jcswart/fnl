@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Jarrod Swart <jcswart@gmail.com>"]
 
 [dependencies]
+clap = {version = "2.29.0", features = ["yaml"]}
 
 [profile.release]
 lto = true
