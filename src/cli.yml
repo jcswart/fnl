@@ -1,0 +1,16 @@
+name: fnl
+version: "1.0"
+author: Jarrod Swart <jcswart@gmail.com>
+about: Select and order columns of data from stdin.
+settings:
+  - TrailingVarArg
+args:
+  - delimiter:
+      short: d
+      long: delimiter
+      value_name: CHARACTER
+      help: Sets the column delimiter. Default is TAB.
+      takes_value: true
+  - columns:
+      multiple: true
+      help: Column indexes to grab from stdin.

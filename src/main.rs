@@ -35,10 +35,14 @@ fn print_selected(columns: &Vec<&str>, pieces: &[&str]) -> () {
     let mut output = vec![];
     for i in columns {
         let j = i.parse::<u32>().unwrap() - 1;
-        output.push(&pieces[j as usize]);
+        if j < pieces.len() as u32 {
+            output.push(&pieces[j as usize]);
+        };
     }
     let z: Vec<String> = output.iter().map(|s| String::from(**s)).collect();
-    println!("{}", intersperse(&z, &"\t".to_string()).into_iter().collect::<String>());
+    if ! z.is_empty() {
+        println!("{}", intersperse(&z, &"\t".to_string()).into_iter().collect::<String>());
+    }
 }
 
 fn print_all(pieces: &[&str]) -> () {
