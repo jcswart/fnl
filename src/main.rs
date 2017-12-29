@@ -54,6 +54,9 @@ fn intersperse<'a>(xs: &'a [String], seperator: &'a str) -> Vec<&'a str> {
     let mut result: Vec<&str> = vec![];
     let end = xs.last().unwrap();
     for x in xs.iter() {
+        if x.is_empty() {
+            continue;
+        }
         result.push(x);
         if x.ne(end) {
             result.push(seperator)
